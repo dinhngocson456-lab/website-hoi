@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {isAdmin,publicRecord} from '../app/access.ts';
+const row=(kind,data)=>({id:'test',kind,version:1,createdAt:'',updatedAt:'',data});
+assert.equal(Boolean(isAdmin(null)),false);
+assert.equal(Boolean(isAdmin({email:'visitor@example.com'})),false);
+assert.equal(isAdmin({email:'dinhngocson456@gmail.com'}),true);
+for(const kind of ['finance','reports','people'])assert.equal(publicRecord(row(kind,{title:'private'})),null);
+assert.equal(publicRecord(row('news',{status:'Nháp'})),null);
+assert.equal(publicRecord(row('documents',{status:'Dự thảo'})),null);
+assert.equal(publicRecord(row('news',{status:'Đã công bố',title:'Visible'})).data.title,'Visible');
+assert.deepEqual(publicRecord(row('settings',{title:'Hội',bank:'private',account:'private',accountName:'private'})).data,{title:'Hội'});
+assert.deepEqual(publicRecord(row('organizations',{title:'Đơn vị',status:'Đang hoạt động',taxCode:'private',note:'private',fileId:'private'})).data,{title:'Đơn vị',status:'Đang hoạt động'});
+console.log('Public visibility and owner authorization tests passed');
