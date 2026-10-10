@@ -4,6 +4,17 @@ import type { ConnectorBinding } from "../lib/connector-contract.mjs";
 
 export default {
   fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
+    if ((env as unknown as {PUBLIC_PREVIEW?:string}).PUBLIC_PREVIEW === 'true') {
+      const headers = new Headers(request.headers);
+      for (const key of [...headers.keys()]) {
+        if (key.startsWith('oai-authenticated-user-')) headers.delete(key);
+      }
+      request = new Request(request, {headers});
+      const path = new URL(request.url).pathname;
+      if (['/signin-with-chatgpt','/signout-with-chatgpt','/callback'].includes(path)) {
+        return new Response('Bản xem công khai. Phần quản trị chưa được cấu hình trên máy chủ này.', {status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
+      }
+    }
     let binding = ctx.props?.CONNECTORS;
     // Local preview emulates the same request-scoped capability. This branch and
     // the auxiliary service binding are absent from production builds.

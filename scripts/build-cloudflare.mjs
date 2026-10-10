@@ -1,0 +1,15 @@
+import {spawnSync} from 'node:child_process';
+import {readFile,writeFile} from 'node:fs/promises';
+const result=spawnSync(process.execPath,['scripts/run-framework.mjs','build'],{stdio:'inherit',env:{...process.env,SITES_PUBLIC_PREVIEW:'true'}});
+if(result.status!==0)process.exit(result.status||1);
+const path='dist/server/wrangler.json';
+const config=JSON.parse(await readFile(path,'utf8'));
+config.name='website-hoi';
+config.topLevelName='website-hoi';
+config.workers_dev=true;
+config.d1_databases=[];
+config.r2_buckets=[];
+config.services=[];
+config.vars={...config.vars,PUBLIC_PREVIEW:'true'};
+await writeFile(path,JSON.stringify(config,null,2)+'\n');
+console.log('Cloudflare public preview ready. Administration stays in the original application.');
