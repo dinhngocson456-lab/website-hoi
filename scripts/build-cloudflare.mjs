@@ -6,6 +6,7 @@ const path='dist/server/wrangler.json';
 const config=JSON.parse(await readFile(path,'utf8'));
 config.name='website-hoi';
 config.topLevelName='website-hoi';
+config.compatibility_flags=[...new Set(config.compatibility_flags||[])];
 config.workers_dev=true;
 config.d1_databases=[];
 config.r2_buckets=[];
